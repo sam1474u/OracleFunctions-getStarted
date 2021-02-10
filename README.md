@@ -1,4 +1,4 @@
-# OracleFunctions-getStarted
+# Getting Started with Oracle Functions (Using Cloud Shell)
 Learn how to work with Oracle Functions
 
 In this tutorial, you use an Oracle Cloud Infrastructure account to set up Oracle Functions development using Cloud Shell. Then, we create a function application and a function. Key tasks include how to:
