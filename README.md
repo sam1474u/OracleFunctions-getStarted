@@ -35,11 +35,13 @@ Your OCI account configured to support Oracle Functions development. See Create 
 https://www.oracle.com/webfolder/technetwork/tutorials/infographics/oci_functions_cloudshell_quickview/functions_quickview_top/functions_quickview/index.html#
 OCI Cloud Shell which is included with your account and includes:
 
+```
 OCI CLI
 Docker
 Python 3.6+
 Java 1.8+
 Node.js 10+
+```
 
 1.Gather Required Information
 
@@ -95,6 +97,7 @@ Collect our Information
 
 Collect all the information needed to complete the tutorial. Copy the following information into your notepad.
 
+```
 Region: <region-identifier>
 Example: ap-mumbai-1.
 
@@ -119,6 +122,7 @@ From your user avatar, go to Tenancy: <your-tenancy> and copy OCID, example: oci
 Username: <user-name>
 From your user avatar.
 Eg: oracleidentitycloudservice/Saikat
+```
 
 Note: For a user with admin access the username would be like: saikatdey
 
@@ -131,9 +135,11 @@ Note: For a user with admin access the username would be like: saikatdey
 2. In the Start VCN Wizard workflow, select VCN with Internet Connectivity and then click Start VCN Wizard .
 3. In the configuration dialog, fill in the VCN Name for our VCN. Our Compartment is already set to its default value of <our-tenancy> (root).
 4. In the Configure VCN and Subnets section, keep the default values for the CIDR blocks:
+ 
 VCN CIDR BLOCK: 10.0.0.0/16
 PUBLIC SUBNET CIDR BLOCK: 10.0.0.0/24
 PRIVATE SUBNET CIDR BLOCK: 10.0.1.0/24
+ 
 
 ![image](https://user-images.githubusercontent.com/42166489/107511346-5b58a000-6bcb-11eb-8308-905e100940d9.png)
 
@@ -161,6 +167,7 @@ An Add Ingress Rules dialog is displayed.
 12. Fill in the ingress rule with the following information. Once all the data is entered, click Add Ingress Rules.
 Fill in the ingress rule as follows:
 
+```
 Stateless: Checked
 Source Type: CIDR
 Source CIDR: 0.0.0.0/0
@@ -169,6 +176,7 @@ Source port range: (leave-blank)
 Destination Port Range: 3000
 Description: VCN for applications
 Once we click Add Ingress Rule, HTTP connections are allowed to our public subnet.
+```
 
 3.Log into the OCI Registry
 
@@ -188,9 +196,11 @@ Username: <tenancy-name>/<user-name>
 Password: <auth-token>
 
 In Cloud Shell:
+```
 sudo docker login ap-mumbai-1.ocir.io
 bmdrgwy1wsjh/oracleidentitycloudservice/Saikat
 3:0y1BF2Jj+;s_<sn]fE
+```
 You have logged your instance into OCIR.
 
 4. Configure Functions
@@ -224,11 +234,13 @@ Note: View/Edit your Context
 
 Our Fn context files are located in the ~/.fn/contexts directory. Each context is stored in a .yaml file. For example, our us-phoenix-1.yaml file might look similar to:
 
+```
 api-url: https://functions.us-phoenix-1.oci.oraclecloud.com
 oracle.compartment-id: ocid1.compartment.oc1..aaaaaaaarvdfa72n...
 provider: oraclecs
 registry: phx.ocir.io/my-tenancy/my-func-prj
-                
+```
+
 We can edit the file directly with an editor if necessary.
 For a detailed explanation of each step, see: 
 https://www.oracle.com/webfolder/technetwork/tutorials/infographics/oci_functions_cloudshell_quickview/functions_quickview_top/functions_quickview/index.html#
@@ -246,10 +258,12 @@ Open Developer Services and then Functions which are part of the Solutions and P
 Click Create Application.
 Fill in the form data.
 
+```
 Name: <your-app-name>
 VCN: <your-VCN>
 Subnets: <your-public-subnet> or <your-private-subnet>
- 
+```
+
 Note: A public or private subnet may be used, select one.
 Click Create.
 Our app is created.
@@ -275,7 +289,7 @@ mkdir my-dir-name
 cd my-dir-name                        
                     
 Create a Java "Hello World" function with Fn.
-
+```
 fn init --runtime java my-func-name
 This command creates a directory named my-func-name with several files in it.
 
@@ -284,18 +298,23 @@ pom.xml - Maven build file.
 src/main/java/com/example/fn/HelloFunction.java - The actual function file.
 Change into the directory.
 Deploy the function.
-
+```
+```
 fn -v deploy --app your-app-name
+```
 Various messages are displayed as the docker images are built, pushed to OCIR, and eventually deployed to Oracle Functions.
 
 Invoke the function.
+```
 fn invoke your-app-name my-func-name
+```
 
 Returns: Hello, world!
-
+```
 Invoke the function with a parameter.
 echo -n "Bob" | fn invoke your-app-name my-func-name
 Returns: Hello, Bob!
+```
 
 ![image](https://user-images.githubusercontent.com/42166489/107511965-2e58bd00-6bcc-11eb-9d09-626814c9c287.png)
 
@@ -306,16 +325,20 @@ If you want to connect to your function from the net, you need to get the functi
 fn inspect function your-app-name my-func-name
 
 Examine the results of the inspect command. Notice the invoke endpoint URL is included in the annotatins section of the returned JSON data.
+```
 {
     "annotations": {
         "fnproject.io/fn/invokeEndpoint": "https://aaaaaaaaa.us-ashburn-1.functions.oci.oraclecloud.com/1111111/functions/ocid1.fnfunc.oc1.iad.aaaaaaaaa.../actions/invoke",
         "oracle.com/oci/compartmentId": "ocid1.compartment.oc1..aaaaaaaa...",
         "__comment":"Remaining output left out for brevity",
+```
 Use the URL returned from inspect to invoke the function. Because functions require requests to be digitally signed, the oci raw-request command is used for this example.
+```
 oci raw-request --http-method POST --request-body "" --target-uri https://https://aaaaaaaaa.us-ashburn-1.functions.oci.oraclecloud.com/1111111/functions/ocid1.fnfunc.oc1.iad.aaaaaaaaa.../actions/invoke
+```
 
 The command returns:
-
+```
 {
     "data": "Hello, world!",
     "headers": {
@@ -328,7 +351,8 @@ The command returns:
     },
     "status": "200 OK"
 }
- 
+```
+
 Note: We can connect to a Functions endpoint using tools like curl. However, because of security considerations, the script is complex. For details and an example, see the oci-curl section on the Invoking Functions page.
 
 ![image](https://user-images.githubusercontent.com/42166489/107512018-43cde700-6bcc-11eb-87fa-e273935064e3.png)
@@ -368,6 +392,7 @@ To enable, logging for an application, follow these steps.
 From the main menu, select Developer Services and then Functions which are part of the Solutions and Platform grouping.
 Our applications are listed on the page.
 
+```
 Click the link to the application you created.
 On the left side of the application page, click the Logs link.
 Click Disabled to enable logging for your application.
@@ -378,6 +403,7 @@ Log name: <take-default>
 Log Retention: <take-default>
 Click Enable Log
 Wait a moment for your log to be created.
+```
 
 To view your log, click the log name link created by the preceding steps.
 
@@ -388,4 +414,18 @@ Enabling Logs:
 ![image](https://user-images.githubusercontent.com/42166489/107512167-72e45880-6bcc-11eb-9144-414fa8a1a15e.png)
 
 
+![image](https://user-images.githubusercontent.com/42166489/107512768-4aa92980-6bcd-11eb-8f1b-a882bf2da263.png)
 
+Logs:
+
+![image](https://user-images.githubusercontent.com/42166489/107512792-53016480-6bcd-11eb-9856-a29d7af5d848.png)
+
+We have successfully created a function and deployed it to Oracle Functions.
+
+To explore more information about development with Oracle products, check out these sites:
+
+Oracle Developers Portal- https://developer.oracle.com/
+
+Oracle Cloud Infrastructure- https://www.oracle.com/cloud/
+
+Oracle Functions- https://docs.oracle.com/iaas/Content/Functions/Concepts/functionsoverview.htm
