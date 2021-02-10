@@ -179,7 +179,9 @@ Get the information you gathered earlier.
 Open a terminal window.
 Log in to OCIR:
 
+```
 docker login <region-key>.ocir.io
+```
 You are prompted for your login name and password.
 
 Username: <tenancy-name>/<user-name>
@@ -217,4 +219,173 @@ Sample command: fn update context registry <region-key>.ocir.io/<tenancy-namesp
 Example: fn update context registry phx.ocir.io/my-tenancy/my-func-prj
 
 ![image](https://user-images.githubusercontent.com/42166489/107511416-79260500-6bcb-11eb-810e-90e3b14f2353.png)
+
+Note: View/Edit your Context
+
+Our Fn context files are located in the ~/.fn/contexts directory. Each context is stored in a .yaml file. For example, our us-phoenix-1.yaml file might look similar to:
+
+api-url: https://functions.us-phoenix-1.oci.oraclecloud.com
+oracle.compartment-id: ocid1.compartment.oc1..aaaaaaaarvdfa72n...
+provider: oraclecs
+registry: phx.ocir.io/my-tenancy/my-func-prj
+                
+We can edit the file directly with an editor if necessary.
+For a detailed explanation of each step, see: 
+https://www.oracle.com/webfolder/technetwork/tutorials/infographics/oci_functions_cloudshell_quickview/functions_quickview_top/functions_quickview/index.html#
+
+You have now setup the Fn context for your instance.
+
+5.Create and Deploy a Function
+
+With your configuration complete, it is time to create and deploy a function.
+
+Create an Application
+An Application is the main storage container for functions. Each function must have an application for deployment. To create application, follow these steps.
+
+Open Developer Services and then Functions which are part of the Solutions and Platform grouping.
+Click Create Application.
+Fill in the form data.
+
+Name: <your-app-name>
+VCN: <your-VCN>
+Subnets: <your-public-subnet> or <your-private-subnet>
+ 
+Note: A public or private subnet may be used, select one.
+Click Create.
+Our app is created.
+
+![image](https://user-images.githubusercontent.com/42166489/107511903-197c2980-6bcc-11eb-9c34-7b0c0b858e0c.png)
+
+![image](https://user-images.githubusercontent.com/42166489/107511921-1ed97400-6bcc-11eb-8e1e-c25fd6c04d7a.png)
+
+Choose a Language to Create and Deploy a Function
+
+Select one of the following languages to create and deploy a function. If you want, you can do all three.
+
+Select one of the following languages to create and deploy a function. If you want, you can do all three.
+
+Create and Deploy a Java Function
+With your application created, deploy a Java function. Follow these steps to create a Java "Hello World" function.
+
+Note: Ensure Java 8+ is installed to perform these steps.
+Open Cloud Shell.
+
+Create a directory to store your functions and change into that directory.
+mkdir my-dir-name
+cd my-dir-name                        
+                    
+Create a Java "Hello World" function with Fn.
+
+fn init --runtime java my-func-name
+This command creates a directory named my-func-name with several files in it.
+
+func.yaml - Function configuration file.
+pom.xml - Maven build file.
+src/main/java/com/example/fn/HelloFunction.java - The actual function file.
+Change into the directory.
+Deploy the function.
+
+fn -v deploy --app your-app-name
+Various messages are displayed as the docker images are built, pushed to OCIR, and eventually deployed to Oracle Functions.
+
+Invoke the function.
+fn invoke your-app-name my-func-name
+
+Returns: Hello, world!
+
+Invoke the function with a parameter.
+echo -n "Bob" | fn invoke your-app-name my-func-name
+Returns: Hello, Bob!
+
+![image](https://user-images.githubusercontent.com/42166489/107511965-2e58bd00-6bcc-11eb-9d09-626814c9c287.png)
+
+![image](https://user-images.githubusercontent.com/42166489/107511975-357fcb00-6bcc-11eb-83dc-049d751b03b1.png)
+
+If you want to connect to your function from the net, you need to get the function's invoke endpoint. To find our invoke endpoint use the inspect command.
+
+fn inspect function your-app-name my-func-name
+
+Examine the results of the inspect command. Notice the invoke endpoint URL is included in the annotatins section of the returned JSON data.
+{
+    "annotations": {
+        "fnproject.io/fn/invokeEndpoint": "https://aaaaaaaaa.us-ashburn-1.functions.oci.oraclecloud.com/1111111/functions/ocid1.fnfunc.oc1.iad.aaaaaaaaa.../actions/invoke",
+        "oracle.com/oci/compartmentId": "ocid1.compartment.oc1..aaaaaaaa...",
+        "__comment":"Remaining output left out for brevity",
+Use the URL returned from inspect to invoke the function. Because functions require requests to be digitally signed, the oci raw-request command is used for this example.
+oci raw-request --http-method POST --request-body "" --target-uri https://https://aaaaaaaaa.us-ashburn-1.functions.oci.oraclecloud.com/1111111/functions/ocid1.fnfunc.oc1.iad.aaaaaaaaa.../actions/invoke
+
+The command returns:
+
+{
+    "data": "Hello, world!",
+    "headers": {
+        "Content-Length": "13",
+        "Content-Type": "text/plain",
+        "Date": "Tue, 20 Oct 2020 00:53:08 GMT",
+        "Fn-Call-Id": "11111111111",
+        "Fn-Fdk-Version": "fdk-java/1.0.111 (jvm=OpenJDK 64-Bit Server VM, jvmv=11.0.8)",
+        "Opc-Request-Id": "1111111/11111"
+    },
+    "status": "200 OK"
+}
+ 
+Note: We can connect to a Functions endpoint using tools like curl. However, because of security considerations, the script is complex. For details and an example, see the oci-curl section on the Invoking Functions page.
+
+![image](https://user-images.githubusercontent.com/42166489/107512018-43cde700-6bcc-11eb-87fa-e273935064e3.png)
+
+![image](https://user-images.githubusercontent.com/42166489/107512033-47616e00-6bcc-11eb-9dc6-e2da2f861e06.png)
+
+We have successfully deployed and tested a Java function.
+
+6.Review Function Information
+
+View Function Images in OCIR
+When you deploy a function, it is uploaded and stored in OCIR. We can navigate to OCIR and examine the function images.
+
+From the main menu, select Developer Services then Container Registry which is part of the Solutions and Platform grouping.
+Search for the <your-repository-project-name>.
+Under our project name, you should see an entry for each function we deployed.
+Click the link of each image you want to see information about.
+
+![image](https://user-images.githubusercontent.com/42166489/107512071-53e5c680-6bcc-11eb-83ca-bdd368edf669.png)
+
+View Function Execution Information
+After you run a function, you can display metrics for that function.
+
+From the main menu, select Developer Services and then Functions which are part of the Solutions and Platform grouping.
+Our applications are listed on the page.
+
+Click the link to the application you created.
+Click the link to the function you want to examine.
+Metric information about your function is displayed.
+
+![image](https://user-images.githubusercontent.com/42166489/107512095-5cd69800-6bcc-11eb-8784-9cb2011aa7e7.png)
+
+Enable and View Logging Information
+
+To enable, logging for an application, follow these steps.
+
+From the main menu, select Developer Services and then Functions which are part of the Solutions and Platform grouping.
+Our applications are listed on the page.
+
+Click the link to the application you created.
+On the left side of the application page, click the Logs link.
+Click Disabled to enable logging for your application.
+The Enable Log dialog is displayed. Fill in the following information:
+Compartment: <your-compartment-name>
+Log Group: Take the default value Auto-Create a Default Log Group
+Log name: <take-default>
+Log Retention: <take-default>
+Click Enable Log
+Wait a moment for your log to be created.
+
+To view your log, click the log name link created by the preceding steps.
+
+![image](https://user-images.githubusercontent.com/42166489/107512144-6a8c1d80-6bcc-11eb-9788-ed8e47759487.png)
+
+Enabling Logs:
+
+![image](https://user-images.githubusercontent.com/42166489/107512167-72e45880-6bcc-11eb-9144-414fa8a1a15e.png)
+
+
 
